@@ -1,8 +1,18 @@
 {
   "name": "@vorticoncmdr/hclust",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.0.1",
+  "description": "agglomerative hierarchical clustering in JavaScript",
+  "main": "./hclust",
+  "keywords": [
+    "hierarchy",
+    "hierarchical",
+    "cluster",
+    "clustering",
+    "agglomerative",
+    "embedding",
+    "vector",
+    "tree"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,8 +20,8 @@
     "type": "git",
     "url": "git+ssh://git@github.com/VorticonCmdr/hclust.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Valentin Pletzer",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/VorticonCmdr/hclust/issues"
   },
