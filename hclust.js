@@ -43,6 +43,19 @@ const averageDistance = (setA, setB, distances) => {
 const logProgress = (progress) =>
   console.log('Clustering: ', (progress * 100).toFixed(1) + '%');
 
+const updateProgress = (stepNumber, stepProgress, onProgress) => {
+  // return if onProgress is not defined or is not a function
+  if (typeof onProgress !== 'function') {
+    return;
+  }
+
+  // currently only two distinct steps: computing distance matrix and clustering
+  const progress = stepNumber / 2 + stepProgress / 2;
+
+  // call onProgress
+  onProgress(progress);
+};
+
 // the main clustering function
 const clusterData = ({
   data = [],
@@ -58,6 +71,8 @@ const clusterData = ({
   // compute distance between each data point and every other data point
   // N x N matrix where N = data.length
   const distances = data.map((datum, index) => {
+    updateProgress(0, index / (data.length - 1), onProgress);
+
     // get distance between datum and other datum
     return data.map((otherDatum) => distance(datum, otherDatum));
   });
@@ -73,6 +88,8 @@ const clusterData = ({
 
   // iterate through data
   for (let iteration = 0; iteration < data.length; iteration++) {
+    updateProgress(1, (iteration + 1) / data.length, onProgress);
+
     // add current tree slice
     clustersGivenK.push(clusters.map((cluster) => cluster.indexes));
 
@@ -134,9 +151,74 @@ const clusterData = ({
   };
 };
 
+const calculateDistance = (point1, point2, distances) => {
+  // Assuming point1 and point2 are indices in the distance matrix,
+  // retrieve the distance between these points.
+  return distances[point1][point2];
+}
+
+const calculateClusterVariance = (cluster, distances) => {
+    if (cluster.length <= 1) return 0;
+
+    let sumOfDistances = 0;
+    let count = 0;
+
+    // Calculate the sum of distances between all pairs of points in the cluster
+    for (let i = 0; i < cluster.length; i++) {
+      for (let j = i + 1; j < cluster.length; j++) {
+        sumOfDistances += calculateDistance(cluster[i], cluster[j], distances);
+        count++;
+      }
+    }
+
+    // The average distance in a cluster can be used as a measure of variance
+    return sumOfDistances / count;
+}
+
+const calculateWithinClusterVariance(clustersGivenK, distances, K) => {
+  if (K <= 0 || K >= clustersGivenK.length) return null;
+
+  let totalVariance = 0;
+  const clustersAtK = clustersGivenK[K];
+
+  // Calculate variance for each cluster at level K and sum them
+  for (let cluster of clustersAtK) {
+    totalVariance += calculateClusterVariance(cluster, distances);
+  }
+
+  return totalVariance;
+}
+
+const findElbowPoint = (variances) => {
+  const nPoints = variances.length;
+  const firstPoint = [1, variances[0]];
+  const lastPoint = [nPoints, variances[nPoints - 1]];
+
+  let maxDistance = 0;
+  let elbowPoint = 1;
+
+  for (let i = 2; i <= nPoints; i++) {
+    const currentPoint = [i, variances[i - 1]];
+    const distance = Math.abs((lastPoint[1] - firstPoint[1]) * currentPoint[0] -
+                              (lastPoint[0] - firstPoint[0]) * currentPoint[1] +
+                              lastPoint[0] * firstPoint[1] -
+                              lastPoint[1] * firstPoint[0]) / 
+                     euclideanDistance(firstPoint, lastPoint);
+
+    if (distance > maxDistance) {
+      maxDistance = distance;
+      elbowPoint = i;
+    }
+  }
+
+  return elbowPoint;
+}
+
 module.exports = {
-   euclideanDistance,
-   averageDistance,
-   cosineSimilarity,
-   clusterData
+  euclideanDistance,
+  averageDistance,
+  cosineSimilarity,
+  clusterData,
+  calculateWithinClusterVariance,
+  findElbowPoint
 }
