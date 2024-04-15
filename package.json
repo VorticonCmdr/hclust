@@ -1,7 +1,7 @@
 {
   "name": "@vorticoncmdr/hclust",
   "version": "0.0.1",
-  "description": "agglomerative hierarchical clustering in JavaScript",
+  "description": "agglomerative hierarchical clustering for Node.js",
   "main": "./hclust",
   "keywords": [
     "hierarchy",
@@ -9,7 +9,7 @@
     "cluster",
     "clustering",
     "agglomerative",
-    "embedding",
+    "embeddings",
     "vector",
     "tree"
   ],
