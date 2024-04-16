@@ -56,6 +56,21 @@ const updateProgress = (stepNumber, stepProgress, onProgress) => {
   onProgress(progress);
 };
 
+const computeDistances = (data, distanceFn) => {
+  const n = data.length;
+  const distances = Array.from({ length: n }, () => new Array(n));
+
+  for (let i = 0; i < n; i++) {
+    distances[i][i] = 0; // Distance from the element to itself is zero
+    for (let j = i + 1; j < n; j++) {
+      const dist = distanceFn(data[i], data[j]);
+      distances[i][j] = dist;
+      distances[j][i] = dist; // Use symmetry to avoid redundant computation
+    }
+  }
+  return distances;
+}
+
 // the main clustering function
 const clusterData = ({
   data = [],
@@ -70,12 +85,15 @@ const clusterData = ({
 
   // compute distance between each data point and every other data point
   // N x N matrix where N = data.length
+  /*
   const distances = data.map((datum, index) => {
     updateProgress(0, index / (data.length - 1), onProgress);
 
     // get distance between datum and other datum
     return data.map((otherDatum) => distance(datum, otherDatum));
   });
+  */
+  const distances = computeDistances(data, distance);
 
   // initialize clusters to match data
   const clusters = data.map((datum, index) => ({
@@ -175,7 +193,7 @@ const calculateClusterVariance = (cluster, distances) => {
     return sumOfDistances / count;
 }
 
-const calculateWithinClusterVariance(clustersGivenK, distances, K) => {
+const calculateWithinClusterVariance = (clustersGivenK, distances, K) => {
   if (K <= 0 || K >= clustersGivenK.length) return null;
 
   let totalVariance = 0;
@@ -202,7 +220,7 @@ const findElbowPoint = (variances) => {
     const distance = Math.abs((lastPoint[1] - firstPoint[1]) * currentPoint[0] -
                               (lastPoint[0] - firstPoint[0]) * currentPoint[1] +
                               lastPoint[0] * firstPoint[1] -
-                              lastPoint[1] * firstPoint[0]) / 
+                              lastPoint[1] * firstPoint[0]) /
                      euclideanDistance(firstPoint, lastPoint);
 
     if (distance > maxDistance) {
